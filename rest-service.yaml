@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rest-service
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rest-service
+  template:
+    metadata:
+      labels:
+        lbtype: external
+        app: rest-service
+    spec:
+      automountServiceAccountToken: false
+      containers:
+      - name: rest-service
+        image: ashspiker/rest-service:1
+        tty: true
+        imagePullPolicy: Always
+        resources:
+            limits:
+              memory: "1G"
+        livenessProbe:
+          httpGet:
+            path: /
+            port: 7600
+          initialDelaySeconds: 60
+          timeoutSeconds: 60
+          failureThreshold: 2
+          periodSeconds: 30
+        ports:
+        - containerPort: 7600
+          name: "http-7600"
+          protocol: TCP  
+      nodeSelector:
+        nodetype: worker
